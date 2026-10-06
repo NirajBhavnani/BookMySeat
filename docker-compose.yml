@@ -20,6 +20,7 @@ services:
     environment:
       PORT: 3000
       DATABASE_URL: postgres://reservations:reservations@db:5432/reservations
+      ADMIN_TOKEN: local-development-admin-token
     ports:
       - "3000:3000"
     depends_on:

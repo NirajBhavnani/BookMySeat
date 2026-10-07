@@ -1,7 +1,8 @@
 const config = {
     port: Number(process.env.PORT || 3000),
     databaseUrl: process.env.DATABASE_URL,
-    adminToken: process.env.ADMIN_TOKEN
+    adminToken: process.env.ADMIN_TOKEN,
+    jwtSecret: process.env.JWT_SECRET
 };
 
 function validateConfig() {
@@ -15,6 +16,10 @@ function validateConfig() {
 
     if (!config.adminToken) {
         throw new Error('ADMIN_TOKEN is required');
+    }
+
+    if (!config.jwtSecret || config.jwtSecret.length < 32) {
+        throw new Error('JWT_SECRET is required and must be at least 32 characters long');
     }
 }
 

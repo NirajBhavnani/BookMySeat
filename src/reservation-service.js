@@ -74,15 +74,27 @@ async function reserveSeats({ showId, userId, seats, idempotencyKey }) {
         );
 
         if (lockedSeats.rowCount !== sortedSeats.length) {
-            return saveDecline(client, {
-                showId, userId, idempotencyKey, requestHash, code: 'unknown_seat'
+            const result = await saveDecline(client, {
+                showId,
+                userId,
+                idempotencyKey,
+                requestHash,
+                code: 'unknown_seat'
             });
+            transactionOpen = false;
+            return result;
         }
 
         if (lockedSeats.rows.some((seat) => seat.status !== 'available')) {
-            return saveDecline(client, {
-                showId, userId, idempotencyKey, requestHash, code: 'seat_taken'
+            const result = await saveDecline(client, {
+                showId,
+                userId,
+                idempotencyKey,
+                requestHash,
+                code: 'seat_taken'
             });
+            transactionOpen = false;
+            return result;
         }
 
         const activeSeats = await client.query(
@@ -94,9 +106,15 @@ async function reserveSeats({ showId, userId, seats, idempotencyKey }) {
         );
 
         if (activeSeats.rows[0].count + sortedSeats.length > show.per_user_limit) {
-            return saveDecline(client, {
-                showId, userId, idempotencyKey, requestHash, code: 'per_user_limit'
+            const result = await saveDecline(client, {
+                showId,
+                userId,
+                idempotencyKey,
+                requestHash,
+                code: 'per_user_limit'
             });
+            transactionOpen = false;
+            return result;
         }
 
         const amount = BigInt(show.price_paise) * BigInt(sortedSeats.length);

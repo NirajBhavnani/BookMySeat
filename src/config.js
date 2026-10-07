@@ -2,7 +2,8 @@ const config = {
     port: Number(process.env.PORT || 3000),
     databaseUrl: process.env.DATABASE_URL,
     adminToken: process.env.ADMIN_TOKEN,
-    jwtSecret: process.env.JWT_SECRET
+    jwtSecret: process.env.JWT_SECRET,
+    perUserLimit: Number(process.env.PER_USER_LIMIT || 4)
 };
 
 function validateConfig() {
@@ -20,6 +21,10 @@ function validateConfig() {
 
     if (!config.jwtSecret || config.jwtSecret.length < 32) {
         throw new Error('JWT_SECRET is required and must be at least 32 characters long');
+    }
+
+    if (!Number.isInteger(config.perUserLimit) || config.perUserLimit < 1) {
+        throw new Error('PER_USER_LIMIT must be a positive integer');
     }
 }
 

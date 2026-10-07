@@ -6,7 +6,8 @@ const { requireAdmin, createDemoToken, requireUser } = require('./auth');
 const { createShow, getShow } = require('./show-service.js');
 const { ApiError } = require('./errors');
 const { cancelReservation, reserveSeats } = require('./reservation-service.js');
-const { registry, reservationOutcomes, reservationsDeclined } = require('./metrics');
+const { registry, reservationOutcomes, reservationsDeclined, reservationsConfirmed, idempotentReplays } = require('./metrics');
+const { config } = require('./config');
 
 const app = express();
 app.disable('x-powered-by');
@@ -101,6 +102,15 @@ app.post('/shows/:showId/reserve', requireUser, async (req, res) => {
             request_id: req.id
         });
     }
+    const outcome = result.replay ? 'idempotent-replay' : 'confirmed';
+    reservationOutcomes.inc({ outcome });
+
+    if (result.replay) {
+        idempotentReplays.inc();
+    } else {
+        reservationsConfirmed.inc();
+    }
+
     res.status(result.replay ? 200 : 201).json(result.reservation);
 });
 

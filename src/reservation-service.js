@@ -57,7 +57,14 @@ async function reserveSeats({ showId, userId, seats, idempotencyKey }) {
             if (record.decline_code) {
                 await client.query('COMMIT');
                 transactionOpen = false;
-                return { replay: true, decline: record.decline_code };
+                return {
+                    replay: true,
+                    decline: {
+                        status: 409,
+                        code: record.decline_code,
+                        metricReason: declineMetricReason(record.decline_code)
+                    }
+                };
             }
 
             const reservation = await loadReservation(client, record.reservation_id);
@@ -303,7 +310,20 @@ async function saveDecline(client, {
 
     await client.query('COMMIT');
 
-    return { replay: false, decline: code };
+    return {
+        replay: false,
+        decline: {
+            status: 409,
+            code,
+            metricReason: declineMetricReason(code)
+        }
+    };
+}
+
+function declineMetricReason(code) {
+    if (code === 'seat_taken') return 'seat-taken';
+    if (code === 'per_user_limit') return 'per-user-limit';
+    return 'unknown-seat';
 }
 
 module.exports = { cancelReservation, reserveSeats };

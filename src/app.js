@@ -6,6 +6,7 @@ const { requireAdmin, createDemoToken, requireUser } = require('./auth');
 const { createShow, getShow } = require('./show-service.js');
 const { ApiError } = require('./errors');
 const { cancelReservation, reserveSeats } = require('./reservation-service.js');
+const { registry, reservationOutcomes, reservationsDeclined } = require('./metrics');
 
 const app = express();
 app.disable('x-powered-by');
